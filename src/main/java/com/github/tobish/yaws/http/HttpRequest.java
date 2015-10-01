@@ -1,5 +1,7 @@
 package com.github.tobish.yaws.http;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.util.List;
@@ -9,7 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 
 /**
@@ -31,22 +34,16 @@ public class HttpRequest {
 		
 		try {
 			
+			HttpRequestBuilder builder = new HttpRequestBuilder();
+			
 			// The first line of a request defines the Method, URL and the protocol
 			String requestLine = reader.readLine();
-			String[] requestLineParts = requestLine.split(" ");
+			parseRequestLine(builder, requestLine);
 			
-			Preconditions.checkArgument(requestLineParts.length == 3, 
-					"The requestLine must contain of 3 space seperated parts: " + requestLine );
+			// everything else are HTTP-Header
+			reader.lines().forEach(builder::addHeader);
 			
-			String methodString = requestLineParts[0];
-			String url = requestLineParts[1];
-			String protocoll = requestLineParts[2];
-			
-			Preconditions.checkArgument(protocoll.matches("HTTP/1.[0,1]") , "Invalid protocoll passed: " + protocoll);
-
-			Method method = Method.valueOf(methodString.toUpperCase());
-			
-			return new HttpRequest(url, method, ImmutableMap.<String, List<String>>of() , ImmutableMap.<String, List<String>>of(), "", "");
+			return builder.build();
 
 			
 		} catch (IOException e) {
@@ -61,6 +58,26 @@ public class HttpRequest {
 			LOG.error("Failed to parse request: ", iae);
 			throw new ParserException(iae);
 		}
+	}
+	
+
+	private static void parseRequestLine(HttpRequestBuilder builder, String requestLine) {
+		String[] requestLineParts = requestLine.split(" ");
+		
+		Preconditions.checkArgument(requestLineParts.length == 3, 
+				"The requestLine must contain of 3 space seperated parts: " + requestLine );
+		
+		String methodString = requestLineParts[0];
+		Method method = Method.valueOf(methodString.toUpperCase());
+		builder.withMethod(method);
+		
+		String url = requestLineParts[1];
+		builder.withUrl(url);
+		
+		builder.withPath(url.split("\\?")[0]);
+		
+		String protocoll = requestLineParts[2];
+		Preconditions.checkArgument(protocoll.matches("HTTP/1.[0,1]") , "Invalid protocoll passed: " + protocoll);
 	}
 	
 	private HttpRequest(String url, Method method, Map<String, List<String>> header,
@@ -145,5 +162,83 @@ public class HttpRequest {
 	}
 	
 	
+	
+	private static class HttpRequestBuilder {
+
+		private String url;
+		private Method method;
+		private Map<String, List<String>> header = Maps.newHashMap();
+		private Map<String, List<String>> queryStringParameter = Maps.newHashMap();
+		private String path;
+		private String messageBody = "";
+		
+		public HttpRequestBuilder withUrl(String url) {
+			this.url = url;
+			return this;
+		}
+		
+		public HttpRequestBuilder withMethod(Method method) {
+			this.method = method;
+			return this;
+		}
+		
+		public HttpRequestBuilder withHeader(Map<String, List<String>> header) {
+			this.header = header;
+			return this;
+		}
+		
+		public HttpRequestBuilder addHeader(String header) {
+			String[] headerParts = header.split(":");
+			return this.addHeader(headerParts[0], headerParts[1]);
+		}
+		
+		public HttpRequestBuilder addHeader(String key,String value) {
+			if (null == header) {
+				header = Maps.<String, List<String>>newHashMap();
+			}
+			if (!header.containsKey(key)) {
+				header.put(key, Lists.<String>newArrayList());
+			}
+			header.get(key).add(value);
+			return this;
+		}
+		
+		public HttpRequestBuilder withQueryStringParameter(Map<String, List<String>> parameter) {
+			this.queryStringParameter = parameter;
+			return this;
+		}
+		
+		public HttpRequestBuilder addQueryStrinParameter(String key,String value) {
+			if (null == queryStringParameter) {
+				queryStringParameter = Maps.<String, List<String>>newHashMap();
+			}
+			if (!queryStringParameter.containsKey(key)) {
+				queryStringParameter.put(key, Lists.<String>newArrayList());
+			}
+			queryStringParameter.get(key).add(value);
+			return this;
+		}
+		
+		public HttpRequestBuilder withPath(String p) {
+			this.path = p;
+			return this;
+		}
+		
+		public HttpRequestBuilder withMessageBody(String body) {
+			this.messageBody = body;
+			return this;
+		}
+		
+		public HttpRequest build() {
+			checkNotNull(this.header);
+			checkNotNull(this.messageBody);
+			checkNotNull(this.method);
+			checkNotNull(this.queryStringParameter);
+			checkNotNull(this.url);
+			
+			return new HttpRequest(url, method, header, queryStringParameter, path, messageBody);
+		}
+
+	}
 	
 }

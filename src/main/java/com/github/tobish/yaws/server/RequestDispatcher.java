@@ -7,13 +7,16 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 final class RequestDispatcher implements Runnable {
+	
+	public static final Logger LOG = LoggerFactory.getLogger(RequestDispatcher.class);
 	
 	private final ServerSocket serverSocket;
 
-	/**
-	 * @param yawsServerImpl
-	 */
 	RequestDispatcher(ServerSocket serverSocket) {
 		this.serverSocket = serverSocket;
 	}
@@ -28,8 +31,11 @@ final class RequestDispatcher implements Runnable {
 			    BufferedReader in = new BufferedReader(
 			            new InputStreamReader(clientSocket.getInputStream()));
 
-			    YawsServerImpl.LOG.info("Recieved request:\n {}", in.readLine());
+			    LOG.info("Recieved request:");
+			    in.lines().forEach(LOG::info);
+			    
 			    out.write("OK");
+			    out.flush();
 			    clientSocket.close();
 			    
 			} catch (IOException e) {
