@@ -1,14 +1,22 @@
 package com.github.tobish.yaws;
 
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Test;
 
 public class ApplicationTest {
 	
+	
+	
 	@Test
-	public void testStartTheApplicationShouldOpenPort8080() {
-		String[] args = {"8080"}; 
+	public void testApplicationReadConfigurationWhileCreating() {
+		String[] args = {"-p", "8080"};
 		Application app = new Application(args);
-		app.start();
+		
+		assertThat(app.getConfiguration(), notNullValue());
+		assertThat(app.getConfiguration().port, is(8080));
 	}
 
 }
