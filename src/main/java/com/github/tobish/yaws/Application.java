@@ -37,7 +37,6 @@ public class Application {
 	}
 
 	public void start() {
-		LOG.info("You have to start somewhere");
 		server.start(configuration);
 	}
 
@@ -54,6 +53,11 @@ public class Application {
 		CmdLineParser parser = new CmdLineParser(configuration);
 		try {
 			parser.parseArgument(args);
+			if (null == configuration.rootPath) {
+				LOG.info("No document dir defined. Assuming {}", System.getProperty("user.dir"));
+				configuration.rootPath = System.getProperty("user.dir");
+			}
+				
 		} catch (CmdLineException e) {
 			LOG.error("Failed to read command line parameters");
 			LOG.info(parser.printExample(OptionHandlerFilter.ALL));

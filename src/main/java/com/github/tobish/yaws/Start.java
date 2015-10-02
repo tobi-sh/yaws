@@ -16,9 +16,6 @@ public class Start {
 	public static void main(String[] args) {
 		Application app = new Application(args);
 		app.start();
-		System.out.println("Press any key to stop");
-		System.console().readLine();
-		app.stop();
 	}
 	
 }

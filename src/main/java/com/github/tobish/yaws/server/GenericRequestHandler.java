@@ -9,7 +9,10 @@ import java.net.Socket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.tobish.yaws.configuration.YawsConfiguration;
 import com.github.tobish.yaws.http.HttpRequest;
+import com.github.tobish.yaws.http.HttpResponse;
+import com.github.tobish.yaws.httpmethods.HttpGetMethodHandler;
 import com.github.tobish.yaws.httpmethods.HttpMethodHandler;
 import com.github.tobish.yaws.httpmethods.UnknownHttpMethodHandler;
 
@@ -24,9 +27,12 @@ public class GenericRequestHandler implements Runnable {
 	private static final Logger LOG = LoggerFactory.getLogger(GenericRequestHandler.class);
 	
 	private final Socket clientSocket;
+	
+	private final YawsConfiguration configuration;
 
-	public GenericRequestHandler(Socket clientSocket) {
+	public GenericRequestHandler(Socket clientSocket, YawsConfiguration configuration) {
 		this.clientSocket = clientSocket;
+		this.configuration = configuration;
 	}
 
 	@Override
@@ -41,7 +47,10 @@ public class GenericRequestHandler implements Runnable {
 			
 			HttpMethodHandler methodHandler = buildMethodHandler(httpRequest);
 			
-			methodHandler.handleRequest(httpRequest, out);
+			HttpResponse response = methodHandler.handleRequest(httpRequest);
+			
+			out.println(response);
+			out.close();
 
 			clientSocket.close();
 		} catch (IOException e) {
@@ -55,15 +64,19 @@ public class GenericRequestHandler implements Runnable {
 		HttpMethodHandler methodHandler;
 		
 		switch (httpRequest.getMethod()) {
+		case GET:
+			methodHandler = new HttpGetMethodHandler(configuration.rootPath);
+			break;
+
 		case CONNECT:
 		case DELETE:
-		case GET:
 		case HEAD:
 		case POST:
 		case PUT:
 		case TRACE:
 		default:
 			methodHandler = new UnknownHttpMethodHandler();
+			break;
 		}
 		return methodHandler;
 	}

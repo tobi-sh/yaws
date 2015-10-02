@@ -32,30 +32,36 @@ public class HttpRequest {
 	 */
 	public static HttpRequest parse(BufferedReader reader) {
 		
+		StringBuffer entireRequest = new StringBuffer();
 		try {
 			
 			HttpRequestBuilder builder = new HttpRequestBuilder();
 			
 			// The first line of a request defines the Method, URL and the protocol
 			String requestLine = reader.readLine();
+			entireRequest.append(requestLine + System.lineSeparator());
 			parseRequestLine(builder, requestLine);
 			
-			// everything else are HTTP-Header
-			reader.lines().forEach(builder::addHeader);
+			// read HTTP-Header until the next empty line
+			for (String line = reader.readLine(); null != line && !line.isEmpty() ; line = reader.readLine()) {
+				entireRequest.append(line + System.lineSeparator());
+				builder.addHeader(line);
+			}
 			
 			return builder.build();
 
 			
 		} catch (IOException e) {
-			LOG.error("Failed to parse request: ", e);
+			
+			LOG.error("Failed to parse request: {} ",entireRequest.toString() , e);
 			throw new RequestParserException(e);
 		}
 		catch (NullPointerException npe) {
-			LOG.error("Failed to parse request: ", npe);
+			LOG.error("Failed to parse request: {} ",entireRequest.toString() , npe);
 			throw new RequestParserException(npe);
 		}
 		catch (IllegalArgumentException iae) {
-			LOG.error("Failed to parse request: ", iae);
+			LOG.error("Failed to parse request: {} ",entireRequest.toString() , iae);
 			throw new RequestParserException(iae);
 		}
 	}
@@ -164,7 +170,7 @@ public class HttpRequest {
 	
 	
 	
-	private static class HttpRequestBuilder {
+	public static class HttpRequestBuilder {
 
 		private String url;
 		private Method method;
@@ -190,7 +196,10 @@ public class HttpRequest {
 		
 		public HttpRequestBuilder addHeader(String header) {
 			String[] headerParts = header.split(":");
-			return this.addHeader(headerParts[0], headerParts[1]);
+			
+			String key = headerParts[0];
+			String value = headerParts.length > 1 ? headerParts[1] : "";
+			return this.addHeader(key, value);
 		}
 		
 		public HttpRequestBuilder addHeader(String key,String value) {

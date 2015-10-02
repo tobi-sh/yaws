@@ -13,6 +13,6 @@ public class YawsConfiguration {
 	public int port = 8080;
 	
     @Option(name="-d",usage="The root directory where all resources are located at")
-	public String rootPath;
+	public String rootPath ;
 	
 }

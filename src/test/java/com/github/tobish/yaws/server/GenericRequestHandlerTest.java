@@ -15,6 +15,8 @@ import java.nio.charset.StandardCharsets;
 import org.junit.Test;
 import org.mockito.Mockito;
 
+import com.github.tobish.yaws.configuration.YawsConfiguration;
+
 public class GenericRequestHandlerTest {
 
 	@Test
@@ -24,8 +26,10 @@ public class GenericRequestHandlerTest {
 		String sampleRequest = "GET /index.html HTTP/1.1" + System.lineSeparator();
 
 		Socket clientSocket = mockSocket(outputStream, sampleRequest);
+		YawsConfiguration configuration = new YawsConfiguration();
+		configuration.rootPath = "/";
 
-		GenericRequestHandler requestHandler = new GenericRequestHandler(clientSocket);
+		GenericRequestHandler requestHandler = new GenericRequestHandler(clientSocket, configuration);
 
 		requestHandler.run();
 
@@ -40,8 +44,10 @@ public class GenericRequestHandlerTest {
 		String sampleRequest = "CONNECT / HTTP/1.1" + System.lineSeparator();
 
 		Socket clientSocket = mockSocket(outputStream, sampleRequest);
-
-		GenericRequestHandler requestHandler = new GenericRequestHandler(clientSocket);
+		YawsConfiguration configuration = new YawsConfiguration();
+		configuration.rootPath = "/";
+		
+		GenericRequestHandler requestHandler = new GenericRequestHandler(clientSocket, configuration);
 
 		requestHandler.run();
 

@@ -1,8 +1,15 @@
 package com.github.tobish.yaws.http;
 
+import static com.github.tobish.yaws.http.ResponseHeader.CONTENT_LENGTH;
+import static com.github.tobish.yaws.http.ResponseHeader.DATE;
+import static com.github.tobish.yaws.http.ResponseHeader.SERVER;
+import static java.util.Collections.singletonList;
+
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 
+import com.github.tobish.yaws.http.constants.ResponseCode;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -13,41 +20,6 @@ import com.google.common.collect.Maps;
  */
 public class HttpResponse {
 
-	/**
-	 * HTTP Response codes with text and numerical representation
-	 */
-	public enum ResponseCode {
-		OK (200, "OK"),
-		CREATED(201, "Created"),
-		
-		BAD_REQUEST(400, "Bad Request"),
-		NOT_FOUND(404, "Not Found"),
-		METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
-		I_AM_A_TEAPOT(418, "I am a teapot"),
-		
-		SERVER_ERROR(500, "Internal Server Error")
-		;
-		
-		
-		private final int code;
-		
-		private final String responseText;
-		
-		ResponseCode(int code, String text) {
-			this.code = code;
-			this.responseText = text;
-		}
-		
-		public int getResponseCode() {
-			return this.code;
-		}
-		
-		public String getResponseText() {
-			return this.responseText;
-		}
-	}
-	
-	
 	private static final String HTTP_VERSION = "HTTP/1.1";
 	
 	private final ResponseCode responseCode;
@@ -63,6 +35,18 @@ public class HttpResponse {
 		this.content = content;
 	}
 	
+	public ResponseCode getResponseCode() {
+		return responseCode;
+	}
+
+	public Map<String, List<String>> getHeader() {
+		return header;
+	}
+
+	public byte[] getContent() {
+		return content;
+	}
+
 	/**
 	 * The string representation of the HTTP-Response. According to the spec this should look like:
 	 * 
@@ -92,13 +76,27 @@ public class HttpResponse {
 	}
 
 	private void addHeader(StringBuffer sb) {
+		addCommonHeader();
+		
 		header.forEach((String key, List<String> value) -> {
 			sb.append(key);
-			sb.append(":");
-			sb.append(value);
+			sb.append(": ");
+			sb.append(value.get(0));
 			sb.append(System.lineSeparator());
 		});
 		
+	}
+
+	private void addCommonHeader() {
+		if (!header.containsKey(CONTENT_LENGTH)) {
+			header.put(CONTENT_LENGTH.toString(), singletonList(Integer.toString(content.length)));
+		}
+		if (!header.containsKey(DATE)) {
+			header.put(DATE.toString(), singletonList(LocalDateTime.now().toString()));
+		}
+		if(!header.containsKey(SERVER)) {
+			header.put(SERVER.toString(), singletonList("YAWS"));
+		}
 	}
 
 	private void addStatusLine(StringBuffer sb) {
@@ -141,7 +139,7 @@ public class HttpResponse {
 			return this;
 		}
 		
-		public HttpResonseBuilder addContent(byte[] content) {
+		public HttpResonseBuilder withContent(byte[] content) {
 			this.content = content;
 			return this;
 		}

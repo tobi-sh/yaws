@@ -1,10 +1,8 @@
 package com.github.tobish.yaws.httpmethods;
 
-import java.io.PrintWriter;
-
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
-import com.github.tobish.yaws.http.HttpResponse.ResponseCode;
+import com.github.tobish.yaws.http.constants.ResponseCode;
 
 /**
  * Handle unknown http methods
@@ -13,13 +11,12 @@ import com.github.tobish.yaws.http.HttpResponse.ResponseCode;
 public class UnknownHttpMethodHandler implements HttpMethodHandler {
 
 	@Override
-	public void handleRequest(HttpRequest request, PrintWriter output) {
+	public HttpResponse handleRequest(HttpRequest request) {
 		
 		HttpResponse response = 
 				new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.METHOD_NOT_ALLOWED).build();
 		
-		output.write(response.toString());
-		output.flush();
+		return response;
 	}
 
 }

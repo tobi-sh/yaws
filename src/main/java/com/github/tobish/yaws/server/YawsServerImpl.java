@@ -24,7 +24,7 @@ public class YawsServerImpl implements YawsServer {
 			serverSocket = new ServerSocket(configuration.port);
 			
 			singleThreadExecutor = Executors.newSingleThreadExecutor();
-			singleThreadExecutor.execute(new RequestDispatcher(serverSocket));
+			singleThreadExecutor.execute(new RequestDispatcher(serverSocket, configuration));
 			
 		} catch (IOException e) {
 			LOG.error("Failed to start a new server on port {}", configuration.port, e);

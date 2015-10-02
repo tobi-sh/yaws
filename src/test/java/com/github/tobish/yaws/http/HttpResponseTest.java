@@ -4,7 +4,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.github.tobish.yaws.http.HttpResponse.ResponseCode;
+import com.github.tobish.yaws.http.constants.ResponseCode;
 
 public class HttpResponseTest {
 
@@ -13,7 +13,7 @@ public class HttpResponseTest {
 		HttpResponse response = new HttpResponse.HttpResonseBuilder().
 				withResponseCode(ResponseCode.METHOD_NOT_ALLOWED).build();
 		
-		Assert.assertThat(response.toString(), Matchers.is("HTTP/1.1 405 Method Not Allowed" + System.lineSeparator()));
+		Assert.assertThat(response.toString(), Matchers.containsString("HTTP/1.1 405 Method Not Allowed" + System.lineSeparator()));
 	}
 	
 }
