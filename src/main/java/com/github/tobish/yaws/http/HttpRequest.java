@@ -48,15 +48,15 @@ public class HttpRequest {
 			
 		} catch (IOException e) {
 			LOG.error("Failed to parse request: ", e);
-			throw new ParserException(e);
+			throw new RequestParserException(e);
 		}
 		catch (NullPointerException npe) {
 			LOG.error("Failed to parse request: ", npe);
-			throw new ParserException(npe);
+			throw new RequestParserException(npe);
 		}
 		catch (IllegalArgumentException iae) {
 			LOG.error("Failed to parse request: ", iae);
-			throw new ParserException(iae);
+			throw new RequestParserException(iae);
 		}
 	}
 	
@@ -103,7 +103,8 @@ public class HttpRequest {
 		PUT,
 		DELETE,
 		TRACE,
-		CONNECT
+		CONNECT,
+		UNKNOWN
 	}
 	
 	/**

@@ -39,13 +39,14 @@ dependencies {
     // The google core libraries with a huge amount of utility classes
     compile 'com.google.guava:guava:18.0'
 
-    // Declare the dependency for your favourite test framework you want to use in your tests.
-    // TestNG is also supported by the Gradle Test task. Just change the
-    // testCompile dependency to testCompile 'org.testng:testng:6.8.1' and add
-    // 'test.useTestNG()' to your build script.
+    // testing framework
     testCompile 'junit:junit:4.12'
     
+    // for better matching test results
     testCompile 'org.hamcrest:hamcrest-all:1.3'
+
+    // to mock classes which are not under test
+    testCompile 'org.mockito:mockito-all:1.10.19'
 }
 
 jar {

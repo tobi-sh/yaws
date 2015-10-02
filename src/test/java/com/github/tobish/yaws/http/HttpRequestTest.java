@@ -22,17 +22,17 @@ public class HttpRequestTest {
 		
 	}
 	
-	@Test(expected=ParserException.class)
+	@Test(expected=RequestParserException.class)
 	public void testParseInvalidMethod() {
 		HttpRequest.parse(new BufferedReader( new StringReader("PIZZA /index.html HTTP/1.1")));
 	}
 	
-	@Test(expected=ParserException.class)
+	@Test(expected=RequestParserException.class)
 	public void testParseInvalidProtocol() {
 		HttpRequest.parse(new BufferedReader( new StringReader("GET /index.html HTTP/0.9")));
 	}
 	
-	@Test(expected=ParserException.class)
+	@Test(expected=RequestParserException.class)
 	public void testInvalidRequest() {
 		HttpRequest.parse(new BufferedReader( new StringReader("I have no clue what I should pass here")));
 	}
