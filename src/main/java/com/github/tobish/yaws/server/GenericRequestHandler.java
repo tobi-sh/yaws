@@ -3,7 +3,7 @@ package com.github.tobish.yaws.server;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStream;
 import java.net.Socket;
 
 import org.slf4j.Logger;
@@ -41,7 +41,7 @@ public class GenericRequestHandler implements Runnable {
 		
 		try {
 			BufferedReader reader = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-			PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true);
+			OutputStream out = clientSocket.getOutputStream();
 
 			HttpRequest httpRequest = HttpRequest.parse(reader);
 			
@@ -49,7 +49,9 @@ public class GenericRequestHandler implements Runnable {
 			
 			HttpResponse response = methodHandler.handleRequest(httpRequest);
 			
-			out.println(response);
+			out.write(response.toString().getBytes());
+			out.write(response.getContent());
+			
 			out.close();
 
 			clientSocket.close();

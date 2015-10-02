@@ -63,7 +63,7 @@ public class HttpResponse {
 		
 		addStatusLine(sb);
 		addHeader(sb);
-		addContent(sb);
+		// addContent(sb);
 		
 		return sb.toString();
 	}
