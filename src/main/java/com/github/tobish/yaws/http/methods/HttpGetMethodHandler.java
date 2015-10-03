@@ -1,5 +1,8 @@
 package com.github.tobish.yaws.http.methods;
 
+import static com.github.tobish.yaws.http.constants.ResponseHeader.CONTENT_TYPE;
+import static com.github.tobish.yaws.http.constants.ResponseHeader.ETAG;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
@@ -54,10 +57,12 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 		} else { // the default delivery scenario
 			try {
 				byte[] fileContent = Files.toByteArray(f);
+				String etag = etagProvider.provideEtag(fileContent);
 
 				HttpResponse resourceResponse = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.OK)
 						.withContent(fileContent)
-						.addHeader(ResponseHeader.CONTENT_TYPE.toString(), MimeSniffer.suggestMimeType(f).getMimeType())
+						.addHeader(CONTENT_TYPE.toString(), MimeSniffer.suggestMimeType(f).getMimeType())
+						.addHeader(ETAG.toString(), etag)
 						.build();
 				return resourceResponse;
 
