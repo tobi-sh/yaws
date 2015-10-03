@@ -16,7 +16,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
-import com.github.tobish.yaws.http.methods.HttpGetMethodHandler;
+import com.github.tobish.yaws.util.Md5EtagProvider;
 import com.google.common.io.Files;
 
 public class HttpGetMethodHandlerTest {
@@ -38,7 +38,7 @@ public class HttpGetMethodHandlerTest {
 	public void testUnknownResourceShouldReturnANotFoundResponse() throws IOException {
 		HttpRequest request = getRequestForUrl("/pizza.html");
 		
-		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath());
+		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath(), new Md5EtagProvider());
 		HttpResponse response = getHandler.handleRequest(request);
 		
 		assertThat(response.getResponseCode(), is(ResponseCode.NOT_FOUND));
@@ -48,7 +48,7 @@ public class HttpGetMethodHandlerTest {
 	public void testDirectoryListing() {
 		HttpRequest request = getRequestForUrl("/");
 		
-		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath());
+		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath(), new Md5EtagProvider());
 		HttpResponse response = getHandler.handleRequest(request);
 		
 		assertThat(response.getResponseCode(), is(ResponseCode.OK));
@@ -60,7 +60,7 @@ public class HttpGetMethodHandlerTest {
 	public void testRequestAValidResource() {
 		HttpRequest request = getRequestForUrl("/index.html");
 		
-		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath());
+		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath(), new Md5EtagProvider());
 		HttpResponse response = getHandler.handleRequest(request);
 		
 		assertThat(response.getResponseCode(), is(ResponseCode.OK));

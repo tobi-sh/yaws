@@ -14,7 +14,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
-import com.github.tobish.yaws.http.methods.HttpHeadMethodHandler;
+import com.github.tobish.yaws.util.Md5EtagProvider;
 import com.google.common.io.Files;
 
 public class HttpHeadMethodHandlerTest {
@@ -36,7 +36,7 @@ public class HttpHeadMethodHandlerTest {
 				.withUrl("/index.html")
 				.build();
 		
-		HttpHeadMethodHandler headHandler = new HttpHeadMethodHandler(folder.getRoot().getAbsolutePath());
+		HttpHeadMethodHandler headHandler = new HttpHeadMethodHandler(folder.getRoot().getAbsolutePath(), new Md5EtagProvider());
 		HttpResponse response = headHandler.handleRequest(request);
 		
 		Assert.assertThat(response.getResponseCode(), Matchers.is(ResponseCode.OK));

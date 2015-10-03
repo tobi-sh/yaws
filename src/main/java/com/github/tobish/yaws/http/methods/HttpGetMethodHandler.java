@@ -13,6 +13,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
 import com.github.tobish.yaws.http.constants.ResponseHeader;
+import com.github.tobish.yaws.util.EtagProvider;
 import com.github.tobish.yaws.util.MimeSniffer;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
@@ -25,28 +26,32 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 	public static final Logger LOG = LoggerFactory.getLogger(HttpGetMethodHandler.class);
 
 	private final String documentRootDir;
+	
+	private final EtagProvider etagProvider;
 
-	public HttpGetMethodHandler(String documentRootDir) {
+	public HttpGetMethodHandler(String documentRootDir, EtagProvider etagProvider) {
 		super();
 		this.documentRootDir = documentRootDir;
+		this.etagProvider = etagProvider;
 	}
 
 	@Override
 	public HttpResponse handleRequest(HttpRequest request) {
 		File f = new File(documentRootDir + request.getPath());
 
-		if (!f.exists()) {
+		
+		if (!f.exists()) { // handle file not found scenario 
 			HttpResponse notFoundResp = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.NOT_FOUND)
 					.build();
 
 			return notFoundResp;
 
-		} else if (f.isDirectory()) {
+		} else if (f.isDirectory()) { // handle directory listing scenario
 			HttpResponse dirListingResponse = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.OK)
 					.addHeader(ResponseHeader.CONTENT_TYPE.toString(), "text/html")
 					.withContent(buildDirectoryListing(f)).build();
 			return dirListingResponse;
-		} else {
+		} else { // the default delivery scenario
 			try {
 				byte[] fileContent = Files.toByteArray(f);
 

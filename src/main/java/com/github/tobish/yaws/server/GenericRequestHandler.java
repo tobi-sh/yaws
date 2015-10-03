@@ -16,6 +16,7 @@ import com.github.tobish.yaws.http.methods.HttpGetMethodHandler;
 import com.github.tobish.yaws.http.methods.HttpHeadMethodHandler;
 import com.github.tobish.yaws.http.methods.HttpMethodHandler;
 import com.github.tobish.yaws.http.methods.UnknownHttpMethodHandler;
+import com.github.tobish.yaws.util.Md5EtagProvider;
 
 
 /**
@@ -73,10 +74,10 @@ public class GenericRequestHandler implements Runnable {
 		
 		switch (httpRequest.getMethod()) {
 		case GET:
-			methodHandler = new HttpGetMethodHandler(configuration.rootPath);
+			methodHandler = new HttpGetMethodHandler(configuration.rootPath, new Md5EtagProvider());
 			break;
 		case HEAD:
-			methodHandler = new HttpHeadMethodHandler(configuration.rootPath);
+			methodHandler = new HttpHeadMethodHandler(configuration.rootPath, new Md5EtagProvider());
 			break;
 			
 		case CONNECT:
