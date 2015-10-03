@@ -1,4 +1,4 @@
-# yaws
+# yaws ![Unknown Build-Status](https://travis-ci.org/tobi-sh/yaws.svg?branch=master)
 
 Just another web server serving static content build with plain java without any HTTP specific libs for educational reasons. 
 After all this is just my playground to get a better understanding how HTTP/1.1 should work.
