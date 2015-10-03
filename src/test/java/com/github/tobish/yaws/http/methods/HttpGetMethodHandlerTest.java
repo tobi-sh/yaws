@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 import java.io.File;
 import java.io.IOException;
 
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -16,6 +17,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
+import com.github.tobish.yaws.http.constants.ResponseHeader;
 import com.github.tobish.yaws.util.Md5EtagProvider;
 import com.google.common.io.Files;
 
@@ -65,6 +67,18 @@ public class HttpGetMethodHandlerTest {
 		
 		assertThat(response.getResponseCode(), is(ResponseCode.OK));
 		assertThat(new String(response.getContent()), containsString("some content"));
+	}
+	
+	@Test
+	public void testKnownResourcesShouldAlwaysIncludeAnEtagHeader() {
+		
+		HttpRequest request = getRequestForUrl("/index.html");
+		
+		HttpGetMethodHandler getHandler = new HttpGetMethodHandler(folder.getRoot().getAbsolutePath(), new Md5EtagProvider());
+		HttpResponse response = getHandler.handleRequest(request);
+		
+		assertThat(response.getHeader(), Matchers.hasKey(ResponseHeader.ETAG.toString()));
+		
 	}
 	
 
