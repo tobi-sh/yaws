@@ -1,4 +1,4 @@
-package com.github.tobish.yaws.httpmethods;
+package com.github.tobish.yaws.http.methods;
 
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;

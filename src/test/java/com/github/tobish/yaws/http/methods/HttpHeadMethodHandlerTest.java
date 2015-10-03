@@ -1,4 +1,4 @@
-package com.github.tobish.yaws.httpmethods;
+package com.github.tobish.yaws.http.methods;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,6 +14,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
+import com.github.tobish.yaws.http.methods.HttpHeadMethodHandler;
 import com.google.common.io.Files;
 
 public class HttpHeadMethodHandlerTest {

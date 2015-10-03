@@ -1,4 +1,4 @@
-package com.github.tobish.yaws.http;
+package com.github.tobish.yaws.http.constants;
 
 /**
  * Common HTTP-Response Header names

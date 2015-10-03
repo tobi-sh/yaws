@@ -12,10 +12,10 @@ import org.slf4j.LoggerFactory;
 import com.github.tobish.yaws.configuration.YawsConfiguration;
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
-import com.github.tobish.yaws.httpmethods.HttpGetMethodHandler;
-import com.github.tobish.yaws.httpmethods.HttpHeadMethodHandler;
-import com.github.tobish.yaws.httpmethods.HttpMethodHandler;
-import com.github.tobish.yaws.httpmethods.UnknownHttpMethodHandler;
+import com.github.tobish.yaws.http.methods.HttpGetMethodHandler;
+import com.github.tobish.yaws.http.methods.HttpHeadMethodHandler;
+import com.github.tobish.yaws.http.methods.HttpMethodHandler;
+import com.github.tobish.yaws.http.methods.UnknownHttpMethodHandler;
 
 
 /**

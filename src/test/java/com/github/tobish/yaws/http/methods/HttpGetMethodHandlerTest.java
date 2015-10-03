@@ -1,4 +1,4 @@
-package com.github.tobish.yaws.httpmethods;
+package com.github.tobish.yaws.http.methods;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.is;
@@ -16,6 +16,7 @@ import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.constants.ResponseCode;
+import com.github.tobish.yaws.http.methods.HttpGetMethodHandler;
 import com.google.common.io.Files;
 
 public class HttpGetMethodHandlerTest {

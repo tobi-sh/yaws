@@ -1,8 +1,8 @@
 package com.github.tobish.yaws.http;
 
-import static com.github.tobish.yaws.http.ResponseHeader.CONTENT_LENGTH;
-import static com.github.tobish.yaws.http.ResponseHeader.DATE;
-import static com.github.tobish.yaws.http.ResponseHeader.SERVER;
+import static com.github.tobish.yaws.http.constants.ResponseHeader.CONTENT_LENGTH;
+import static com.github.tobish.yaws.http.constants.ResponseHeader.DATE;
+import static com.github.tobish.yaws.http.constants.ResponseHeader.SERVER;
 import static java.util.Collections.singletonList;
 
 import java.time.LocalDateTime;

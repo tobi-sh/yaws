@@ -1,4 +1,4 @@
-package com.github.tobish.yaws.httpmethods;
+package com.github.tobish.yaws.http.methods;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +8,8 @@ import org.slf4j.LoggerFactory;
 
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
-import com.github.tobish.yaws.http.ResponseHeader;
 import com.github.tobish.yaws.http.constants.ResponseCode;
+import com.github.tobish.yaws.http.constants.ResponseHeader;
 import com.github.tobish.yaws.util.MimeSniffer;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
