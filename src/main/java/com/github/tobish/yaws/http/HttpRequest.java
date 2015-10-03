@@ -3,7 +3,7 @@ package com.github.tobish.yaws.http;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedReader;
-import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -30,42 +30,33 @@ public class HttpRequest {
 	 * @return A valid HttpRequest object
 	 * @throws A ParserException if the request is not a valid HTTP Request
 	 */
-	public static HttpRequest parse(BufferedReader reader) {
+	public static final HttpRequest parse(BufferedReader reader) {
 		
-		StringBuffer entireRequest = new StringBuffer();
 		try {
 			
 			HttpRequestBuilder builder = new HttpRequestBuilder();
 			
 			// The first line of a request defines the Method, URL and the protocol
 			String requestLine = reader.readLine();
-			entireRequest.append(requestLine + System.lineSeparator());
+			
+			// If the very first line is already empty it cannot be a valid HTTP-Request so exit early
+			if (null == requestLine || requestLine.isEmpty() ) {
+				return INVALID_HTTP_REQUEST;
+			}
 			parseRequestLine(builder, requestLine);
 			
 			// read HTTP-Header until the next empty line
 			for (String line = reader.readLine(); null != line && !line.isEmpty() ; line = reader.readLine()) {
-				entireRequest.append(line + System.lineSeparator());
 				builder.addHeader(line);
-			}
-			
+			}			
 			return builder.build();
-
-			
-		} catch (IOException e) {
-			
-			LOG.error("Failed to parse request: {} ",entireRequest.toString() , e);
-			throw new RequestParserException(e);
-		}
-		catch (NullPointerException npe) {
-			LOG.error("Failed to parse request: {} ",entireRequest.toString() , npe);
-			throw new RequestParserException(npe);
-		}
-		catch (IllegalArgumentException iae) {
-			LOG.error("Failed to parse request: {} ",entireRequest.toString() , iae);
-			throw new RequestParserException(iae);
+		} catch (Throwable e) {
+			LOG.error("Failed to parse request", e);
+			return INVALID_HTTP_REQUEST;
 		}
 	}
 	
+	public static final HttpRequest INVALID_HTTP_REQUEST = new HttpRequest("", Method.UNKNOWN, Collections.EMPTY_MAP, Collections.EMPTY_MAP, "", "");
 
 	private static void parseRequestLine(HttpRequestBuilder builder, String requestLine) {
 		String[] requestLineParts = requestLine.split(" ");

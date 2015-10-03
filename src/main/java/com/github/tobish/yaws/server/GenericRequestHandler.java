@@ -50,17 +50,22 @@ public class GenericRequestHandler implements Runnable {
 			
 			HttpResponse response = methodHandler.handleRequest(httpRequest);
 			
-			out.write(response.toString().getBytes());
-			out.write(response.getContent());
+			writeResponse(out, response);
 			
 			out.close();
-
 			clientSocket.close();
+			
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
+	}
+
+	private void writeResponse(OutputStream out, HttpResponse response) throws IOException {
+		out.write(response.toString().getBytes());  // The Respone-Line and the Response-Header
+		out.write(System.lineSeparator().getBytes()); // Seperate the content by an additional line break
+		out.write(response.getContent());
 	}
 
 	private HttpMethodHandler buildMethodHandler(HttpRequest httpRequest) {

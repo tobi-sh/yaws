@@ -10,6 +10,8 @@ import java.io.StringReader;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 
+import com.github.tobish.yaws.http.HttpRequest.Method;
+
 public class HttpRequestTest {
 
 	@Test
@@ -22,19 +24,22 @@ public class HttpRequestTest {
 		
 	}
 	
-	@Test(expected=RequestParserException.class)
+	@Test
 	public void testParseInvalidMethod() {
-		HttpRequest.parse(new BufferedReader( new StringReader("PIZZA /index.html HTTP/1.1")));
+		HttpRequest req = HttpRequest.parse(new BufferedReader( new StringReader("PIZZA /index.html HTTP/1.1")));
+		assertThat(req.getMethod(), is( Method.UNKNOWN));
 	}
 	
-	@Test(expected=RequestParserException.class)
+	@Test
 	public void testParseInvalidProtocol() {
-		HttpRequest.parse(new BufferedReader( new StringReader("GET /index.html HTTP/0.9")));
+		HttpRequest req = HttpRequest.parse(new BufferedReader( new StringReader("GET /index.html HTTP/0.9")));
+		assertThat(req.getMethod(), is( Method.UNKNOWN));
 	}
 	
-	@Test(expected=RequestParserException.class)
+	@Test
 	public void testInvalidRequest() {
-		HttpRequest.parse(new BufferedReader( new StringReader("I have no clue what I should pass here")));
+		HttpRequest req = HttpRequest.parse(new BufferedReader( new StringReader("I have no clue what I should pass here")));
+		assertThat(req.getMethod(), is( Method.UNKNOWN));
 	}
 	
 	@Test
