@@ -13,6 +13,7 @@ import com.github.tobish.yaws.configuration.YawsConfiguration;
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.httpmethods.HttpGetMethodHandler;
+import com.github.tobish.yaws.httpmethods.HttpHeadMethodHandler;
 import com.github.tobish.yaws.httpmethods.HttpMethodHandler;
 import com.github.tobish.yaws.httpmethods.UnknownHttpMethodHandler;
 
@@ -69,15 +70,17 @@ public class GenericRequestHandler implements Runnable {
 		case GET:
 			methodHandler = new HttpGetMethodHandler(configuration.rootPath);
 			break;
-
+		case HEAD:
+			methodHandler = new HttpHeadMethodHandler(configuration.rootPath);
+			break;
+			
 		case CONNECT:
 		case DELETE:
-		case HEAD:
 		case POST:
 		case PUT:
 		case TRACE:
 		default:
-			methodHandler = new UnknownHttpMethodHandler();
+			methodHandler = new UnknownHttpMethodHandler(); // will just return a 501
 			break;
 		}
 		return methodHandler;

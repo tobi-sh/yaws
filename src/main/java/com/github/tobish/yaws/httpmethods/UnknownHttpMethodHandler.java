@@ -14,7 +14,7 @@ public class UnknownHttpMethodHandler implements HttpMethodHandler {
 	public HttpResponse handleRequest(HttpRequest request) {
 		
 		HttpResponse response = 
-				new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.METHOD_NOT_ALLOWED).build();
+				new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.SERVICE_NOT_IMPLEMENTED).build();
 		
 		return response;
 	}

@@ -52,7 +52,7 @@ public class GenericRequestHandlerTest {
 		requestHandler.run();
 
 		String result = new String(outputStream.toByteArray());
-		assertThat(result, containsString("405"));
+		assertThat(result, containsString("501"));
 	}
 
 	private Socket mockSocket(ByteArrayOutputStream outputStream, String sampleRequest) throws IOException {

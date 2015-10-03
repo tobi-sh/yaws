@@ -12,7 +12,8 @@ public enum ResponseCode {
 	METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
 	I_AM_A_TEAPOT(418, "I am a teapot"),
 	
-	SERVER_ERROR(500, "Internal Server Error")
+	SERVER_ERROR(500, "Internal Server Error"),
+	SERVICE_NOT_IMPLEMENTED(501, "Not Implemented")
 	;
 	
 	
