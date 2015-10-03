@@ -1,11 +1,20 @@
 package com.github.tobish.yaws.http.methods;
 
+import static com.github.tobish.yaws.http.constants.RequestHeader.IF_MATCH;
+import static com.github.tobish.yaws.http.constants.RequestHeader.IF_MODIFIED_SINCE;
 import static com.github.tobish.yaws.http.constants.ResponseHeader.CONTENT_TYPE;
 import static com.github.tobish.yaws.http.constants.ResponseHeader.ETAG;
+import static com.github.tobish.yaws.http.constants.ResponseHeader.LAST_MODIFIED;
+import static com.github.tobish.yaws.util.MimeSniffer.suggestMimeType;
+import static java.time.format.DateTimeFormatter.ISO_DATE_TIME;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -14,10 +23,11 @@ import org.slf4j.LoggerFactory;
 
 import com.github.tobish.yaws.http.HttpRequest;
 import com.github.tobish.yaws.http.HttpResponse;
+import com.github.tobish.yaws.http.HttpResponse.HttpResonseBuilder;
+import com.github.tobish.yaws.http.constants.MimeType;
+import com.github.tobish.yaws.http.constants.RequestHeader;
 import com.github.tobish.yaws.http.constants.ResponseCode;
-import com.github.tobish.yaws.http.constants.ResponseHeader;
 import com.github.tobish.yaws.util.EtagProvider;
-import com.github.tobish.yaws.util.MimeSniffer;
 import com.google.common.base.Joiner;
 import com.google.common.io.Files;
 
@@ -29,7 +39,7 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 	public static final Logger LOG = LoggerFactory.getLogger(HttpGetMethodHandler.class);
 
 	private final String documentRootDir;
-	
+
 	private final EtagProvider etagProvider;
 
 	public HttpGetMethodHandler(String documentRootDir, EtagProvider etagProvider) {
@@ -42,39 +52,79 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 	public HttpResponse handleRequest(HttpRequest request) {
 		File f = new File(documentRootDir + request.getPath());
 
-		
-		if (!f.exists()) { // handle file not found scenario 
+		if (!f.exists()) { // handle file not found scenario
 			HttpResponse notFoundResp = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.NOT_FOUND)
 					.build();
 
 			return notFoundResp;
+		}
+		
+		try {
+			byte[] fileContent = f.isDirectory() ? buildDirectoryListing(f) : Files.toByteArray(f);
 
-		} else if (f.isDirectory()) { // handle directory listing scenario
-			HttpResponse dirListingResponse = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.OK)
-					.addHeader(ResponseHeader.CONTENT_TYPE.toString(), "text/html")
-					.withContent(buildDirectoryListing(f)).build();
-			return dirListingResponse;
-		} else { // the default delivery scenario
-			try {
-				byte[] fileContent = Files.toByteArray(f);
-				String etag = etagProvider.provideEtag(fileContent);
-
-				HttpResponse resourceResponse = new HttpResponse.HttpResonseBuilder().withResponseCode(ResponseCode.OK)
-						.withContent(fileContent)
-						.addHeader(CONTENT_TYPE.toString(), MimeSniffer.suggestMimeType(f).getMimeType())
-						.addHeader(ETAG.toString(), etag)
-						.build();
-				return resourceResponse;
-
-			} catch (IOException e) {
-				LOG.error("Failed to read file: {}", f.getAbsolutePath());
-				HttpResponse errorResponse = new HttpResponse.HttpResonseBuilder()
-						.withResponseCode(ResponseCode.SERVER_ERROR).build();
-				return errorResponse;
+			String etag = etagProvider.provideEtag(fileContent);
+			Date fileModifyDate = new Date(f.lastModified());
+			
+			HttpResonseBuilder responseBuilder = createBuilderWithCommonHeader(f, etag, fileModifyDate);
+			
+			if (missedPreconditions(request, etag)) {
+				responseBuilder.withResponseCode(ResponseCode.PRECONDITION_FAILED);
+			}
+			else if (isCachedEntity(request, etag, fileModifyDate)) {
+				responseBuilder.withResponseCode(ResponseCode.NOT_MODIFIED);
+			} else {
+				responseBuilder.withResponseCode(ResponseCode.OK).withContent(fileContent);
 			}
 
+			return responseBuilder.build();
+
+		} catch (IOException e) {
+			LOG.error("Failed to read file: {}", f.getAbsolutePath());
+			HttpResponse errorResponse = new HttpResponse.HttpResonseBuilder()
+					.withResponseCode(ResponseCode.SERVER_ERROR).build();
+			return errorResponse;
 		}
 
+	}
+
+	private boolean missedPreconditions(HttpRequest request, String etag) {
+		List<String> ifMatchHeader = request.getHeader().getOrDefault(IF_MATCH.toString(), Collections.EMPTY_LIST);
+		return !ifMatchHeader.isEmpty() && !ifMatchHeader.contains("*") && !ifMatchHeader.contains(etag);
+	}
+
+	private HttpResonseBuilder createBuilderWithCommonHeader(File f, String etag, Date fileModifyDate) {
+		String fileModifiedIsoString = LocalDateTime.ofInstant(fileModifyDate.toInstant(),ZoneOffset.ofHours(fileModifyDate.getTimezoneOffset() / 60)).format(ISO_DATE_TIME);
+		HttpResonseBuilder responseBuilder = new HttpResponse.HttpResonseBuilder()
+				.addHeader(CONTENT_TYPE.toString(), f.isDirectory() ? MimeType.HTML.getMimeType() : suggestMimeType(f).getMimeType())
+				.addHeader(ETAG.toString(), etag)
+				.addHeader(LAST_MODIFIED.toString(),fileModifiedIsoString);
+		return responseBuilder;
+	}
+
+	private boolean isCachedEntity(HttpRequest request, String etag, Date fileModifyDate) {
+		return etagsMatches(request, etag) || resourceWasNotModifedSince(request, fileModifyDate);
+	}
+
+	private boolean resourceWasNotModifedSince(HttpRequest request, Date fileModifyDate) {
+		List<String> ifModifiedSinceHeaders = request.getHeader().getOrDefault(IF_MODIFIED_SINCE.toString(),
+				Collections.EMPTY_LIST);
+		if (ifModifiedSinceHeaders.size() != 1) {
+			return false;
+		}
+		String ifModifedSinceHeader = ifModifiedSinceHeaders.get(0);
+		Date ifModifedSinceDate = new Date(
+				LocalDateTime.parse(ifModifedSinceHeader, ISO_DATE_TIME).toEpochSecond(ZoneOffset.ofHours(1)));
+
+		boolean modifedBefore = fileModifyDate.before(ifModifedSinceDate);
+
+		return modifedBefore;
+	}
+
+	private boolean etagsMatches(HttpRequest request, String etag) {
+		List<String> reqEtags = request.getHeader().getOrDefault(RequestHeader.IF_NONE_MATCH.toString(),
+				Collections.EMPTY_LIST);
+		boolean etagMatch = reqEtags.contains(etag);
+		return etagMatch;
 	}
 
 	private byte[] buildDirectoryListing(File directory) {

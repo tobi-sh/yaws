@@ -80,7 +80,7 @@ public class HttpResponse {
 		
 		header.forEach((String key, List<String> value) -> {
 			sb.append(key);
-			sb.append(": ");
+			sb.append(":");
 			sb.append(value.get(0));
 			sb.append(System.lineSeparator());
 		});

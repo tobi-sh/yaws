@@ -189,7 +189,7 @@ public class HttpRequest {
 			String[] headerParts = header.split(":");
 			
 			String key = headerParts[0];
-			String value = headerParts.length > 1 ? headerParts[1] : "";
+			String value = headerParts.length > 1 ? headerParts[1].trim() : "";
 			return this.addHeader(key, value);
 		}
 		

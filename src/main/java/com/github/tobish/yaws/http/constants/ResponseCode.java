@@ -7,9 +7,12 @@ public enum ResponseCode {
 	OK (200, "OK"),
 	CREATED(201, "Created"),
 	
+	NOT_MODIFIED(304, "Not modifed"),
+	
 	BAD_REQUEST(400, "Bad Request"),
 	NOT_FOUND(404, "Not Found"),
 	METHOD_NOT_ALLOWED(405, "Method Not Allowed"),
+	PRECONDITION_FAILED(412, "Precondition Failed"),
 	I_AM_A_TEAPOT(418, "I am a teapot"),
 	
 	SERVER_ERROR(500, "Internal Server Error"),
