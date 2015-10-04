@@ -41,14 +41,14 @@ public class GenericRequestHandler implements Runnable {
 
 	private static final String CONNECTION_CLOSE_HEADER_VALUE = "close";
 
-	private static final int KEEP_ALIVE_TIMEOUT = 5000;
+	
 
 	private static final Logger LOG = LoggerFactory.getLogger(GenericRequestHandler.class);
 
 	private final Socket clientSocket;
 
 	private final YawsConfiguration configuration;
-
+	
 	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
 	public GenericRequestHandler(Socket clientSocket, YawsConfiguration configuration) {
@@ -71,12 +71,11 @@ public class GenericRequestHandler implements Runnable {
 				// leave if the request could not be parsed after
 				// KEEP_ALIVE_TIMEOUT ms
 				if (!optinalHttpRequest.isPresent()) {
+					clientSocket.close();
+					LOG.info("ClientSocket is closed is {}" , clientSocket.isClosed());
 					break;
 				}
 				HttpRequest httpRequest = optinalHttpRequest.get();
-
-				LOG.info("processing request {} {}  from client {}", httpRequest.getMethod(), httpRequest.getUrl(),
-						httpRequest.getHeader().get(RequestHeader.USER_AGENT.toString()));
 
 				HttpMethodHandler methodHandler = buildMethodHandler(httpRequest);
 
@@ -113,7 +112,7 @@ public class GenericRequestHandler implements Runnable {
 	private Optional<HttpRequest> parseRequest(Future<HttpRequest> futureRequest) {
 		HttpRequest httpRequest = null;
 		try {
-			httpRequest = futureRequest.get(KEEP_ALIVE_TIMEOUT, TimeUnit.MILLISECONDS);
+			httpRequest = futureRequest.get(configuration.connectionTimeout, TimeUnit.MILLISECONDS);
 		} catch (InterruptedException e) {
 			LOG.error("Interupted while parsing request ", e);
 			throw new RequestParserException(e);
@@ -121,6 +120,7 @@ public class GenericRequestHandler implements Runnable {
 			LOG.error("Failed to parse request ", e);
 			throw new RequestParserException(e);
 		} catch (TimeoutException e) {
+			LOG.info("Closing client connection after {}ms", configuration.connectionTimeout);
 			// Thats not that unusual - just return an absent optional
 		}
 		return Optional.ofNullable(httpRequest);

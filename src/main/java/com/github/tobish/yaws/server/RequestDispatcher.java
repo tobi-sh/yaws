@@ -13,8 +13,6 @@ import com.github.tobish.yaws.configuration.YawsConfiguration;
 
 
 final class RequestDispatcher implements Runnable {
-	
-	private static final int NUMBER_OF_THREADS = 3;
 
 	public static final Logger LOG = LoggerFactory.getLogger(RequestDispatcher.class);
 	
@@ -26,7 +24,7 @@ final class RequestDispatcher implements Runnable {
 
 	RequestDispatcher(ServerSocket serverSocket, YawsConfiguration configuration) {
 		this.serverSocket = serverSocket;
-		this.executorService = Executors.newFixedThreadPool(NUMBER_OF_THREADS);
+		this.executorService = Executors.newFixedThreadPool(configuration.numberOfParalellConnections);
 		this.configuration = configuration;
 	}
 

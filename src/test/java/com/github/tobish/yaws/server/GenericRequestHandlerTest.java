@@ -54,6 +54,7 @@ public class GenericRequestHandlerTest {
 		String result = new String(outputStream.toByteArray());
 		assertThat(result, containsString("501"));
 	}
+	
 
 	private Socket mockSocket(ByteArrayOutputStream outputStream, String sampleRequest) throws IOException {
 		Socket clientSocket = Mockito.mock(Socket.class);
