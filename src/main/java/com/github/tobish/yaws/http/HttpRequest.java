@@ -3,6 +3,7 @@ package com.github.tobish.yaws.http;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.BufferedReader;
+import java.net.SocketException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -52,7 +53,11 @@ public class HttpRequest {
 			
 			
 			return builder.build();
-		} catch (Throwable e) {
+		}
+		catch (SocketException e) {
+			return INVALID_HTTP_REQUEST;
+		}
+		catch (Throwable e) {
 			LOG.error("Failed to parse request", e);
 			return INVALID_HTTP_REQUEST;
 		}

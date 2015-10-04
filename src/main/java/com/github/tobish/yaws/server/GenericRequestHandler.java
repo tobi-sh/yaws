@@ -41,8 +41,6 @@ public class GenericRequestHandler implements Runnable {
 
 	private static final String CONNECTION_CLOSE_HEADER_VALUE = "close";
 
-	
-
 	private static final Logger LOG = LoggerFactory.getLogger(GenericRequestHandler.class);
 
 	private final Socket clientSocket;
@@ -72,7 +70,6 @@ public class GenericRequestHandler implements Runnable {
 				// KEEP_ALIVE_TIMEOUT ms
 				if (!optinalHttpRequest.isPresent()) {
 					clientSocket.close();
-					LOG.info("ClientSocket is closed is {}" , clientSocket.isClosed());
 					break;
 				}
 				HttpRequest httpRequest = optinalHttpRequest.get();
@@ -120,7 +117,6 @@ public class GenericRequestHandler implements Runnable {
 			LOG.error("Failed to parse request ", e);
 			throw new RequestParserException(e);
 		} catch (TimeoutException e) {
-			LOG.info("Closing client connection after {}ms", configuration.connectionTimeout);
 			// Thats not that unusual - just return an absent optional
 		}
 		return Optional.ofNullable(httpRequest);
