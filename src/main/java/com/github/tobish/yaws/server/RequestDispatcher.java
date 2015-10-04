@@ -36,8 +36,6 @@ final class RequestDispatcher implements Runnable {
 			try {
 				Socket clientSocket = serverSocket.accept();
 				executorService.execute(new GenericRequestHandler(clientSocket, configuration));
-				
-			    
 			} catch (IOException e) {
 				break;
 			}

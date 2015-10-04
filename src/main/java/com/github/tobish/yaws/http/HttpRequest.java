@@ -49,6 +49,8 @@ public class HttpRequest {
 			for (String line = reader.readLine(); null != line && !line.isEmpty() ; line = reader.readLine()) {
 				builder.addHeader(line);
 			}			
+			
+			
 			return builder.build();
 		} catch (Throwable e) {
 			LOG.error("Failed to parse request", e);
