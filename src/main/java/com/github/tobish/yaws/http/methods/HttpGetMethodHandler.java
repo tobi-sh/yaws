@@ -58,19 +58,18 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 
 			return notFoundResp;
 		}
-		
+
 		try {
 			byte[] fileContent = f.isDirectory() ? buildDirectoryListing(f) : Files.toByteArray(f);
 
 			String etag = etagProvider.provideEtag(fileContent);
 			Date fileModifyDate = new Date(f.lastModified());
-			
+
 			HttpResonseBuilder responseBuilder = createBuilderWithCommonHeader(f, etag, fileModifyDate);
-			
+
 			if (missedPreconditions(request, etag)) {
 				responseBuilder.withResponseCode(ResponseCode.PRECONDITION_FAILED);
-			}
-			else if (isCachedEntity(request, etag, fileModifyDate)) {
+			} else if (isCachedEntity(request, etag, fileModifyDate)) {
 				responseBuilder.withResponseCode(ResponseCode.NOT_MODIFIED);
 			} else {
 				responseBuilder.withResponseCode(ResponseCode.OK).withContent(fileContent);
@@ -93,11 +92,13 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 	}
 
 	private HttpResonseBuilder createBuilderWithCommonHeader(File f, String etag, Date fileModifyDate) {
-		String fileModifiedIsoString = LocalDateTime.ofInstant(fileModifyDate.toInstant(),ZoneOffset.ofHours(fileModifyDate.getTimezoneOffset() / 60)).format(ISO_DATE_TIME);
+		String fileModifiedIsoString = LocalDateTime
+				.ofInstant(fileModifyDate.toInstant(), ZoneOffset.ofHours(fileModifyDate.getTimezoneOffset() / 60))
+				.format(ISO_DATE_TIME);
 		HttpResonseBuilder responseBuilder = new HttpResponse.HttpResonseBuilder()
-				.addHeader(CONTENT_TYPE.toString(), f.isDirectory() ? MimeType.HTML.getMimeType() : suggestMimeType(f).getMimeType())
-				.addHeader(ETAG.toString(), etag)
-				.addHeader(LAST_MODIFIED.toString(),fileModifiedIsoString);
+				.addHeader(CONTENT_TYPE.toString(),
+						f.isDirectory() ? MimeType.HTML.getMimeType() : suggestMimeType(f).getMimeType())
+				.addHeader(ETAG.toString(), etag).addHeader(LAST_MODIFIED.toString(), fileModifiedIsoString);
 		return responseBuilder;
 	}
 
@@ -135,6 +136,9 @@ public class HttpGetMethodHandler implements HttpMethodHandler {
 			file += new File(directory, file).isDirectory() ? "/" : "";
 			return "<li> <a href='./" + file + "'>" + file + "</a></li>";
 		}).collect(Collectors.toList());
+
+		String parentPath = "<li> <a href='" + ".." + "'>" + ".." + "</a></li>";
+		htmlFileList.add(0, parentPath);
 
 		String result = String.format(DIR_LISTING_TEMPLATE, Joiner.on('\n').join(htmlFileList));
 		return result.getBytes();
