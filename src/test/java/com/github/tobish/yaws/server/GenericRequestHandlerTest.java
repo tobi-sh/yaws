@@ -23,7 +23,7 @@ public class GenericRequestHandlerTest {
 	public void testIWillAlwaysGetAnAnswer() throws IOException {
 
 		ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-		String sampleRequest = "GET /index.html HTTP/1.1" + System.lineSeparator();
+		String sampleRequest = "GET /index.html HTTP/1.1" + System.lineSeparator() + "Connection: close";
 
 		Socket clientSocket = mockSocket(outputStream, sampleRequest);
 		YawsConfiguration configuration = new YawsConfiguration();

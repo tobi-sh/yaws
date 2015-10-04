@@ -9,6 +9,7 @@ public enum RequestHeader {
 	KEEP_ALIVE("Keep-Alive"),
 	IF_NONE_MATCH("If-None-Match"),
 	IF_MODIFIED_SINCE ("If-Modified-Since"),
+	CONNECTION("Connection"),
 	IF_MATCH ("If-Match");
 	
 	private final String value;

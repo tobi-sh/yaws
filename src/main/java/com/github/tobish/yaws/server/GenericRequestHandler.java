@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -18,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import com.github.tobish.yaws.configuration.YawsConfiguration;
 import com.github.tobish.yaws.http.HttpRequest;
+import com.github.tobish.yaws.http.HttpRequest.Method;
 import com.github.tobish.yaws.http.HttpResponse;
 import com.github.tobish.yaws.http.RequestParserException;
 import com.github.tobish.yaws.http.constants.RequestHeader;
@@ -35,8 +39,7 @@ import com.github.tobish.yaws.util.Md5EtagProvider;
  */
 public class GenericRequestHandler implements Runnable {
 
-	
-	
+	private static final String CONNECTION_CLOSE_HEADER_VALUE = "close";
 
 	private static final int KEEP_ALIVE_TIMEOUT = 5000;
 
@@ -45,6 +48,8 @@ public class GenericRequestHandler implements Runnable {
 	private final Socket clientSocket;
 
 	private final YawsConfiguration configuration;
+
+	private final ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();
 
 	public GenericRequestHandler(Socket clientSocket, YawsConfiguration configuration) {
 		this.clientSocket = clientSocket;
@@ -60,10 +65,11 @@ public class GenericRequestHandler implements Runnable {
 
 			while (!clientSocket.isClosed()) {
 
-				Future<HttpRequest> futureRequest = Executors.newSingleThreadExecutor().submit(new HttpRequestParser(reader));
+				Future<HttpRequest> futureRequest = singleThreadExecutor.submit(new HttpRequestParser(reader));
 				Optional<HttpRequest> optinalHttpRequest = parseRequest(futureRequest);
-				
-				// leave if the request could not be parsed after KEEP_ALIVE_TIMEOUT ms
+
+				// leave if the request could not be parsed after
+				// KEEP_ALIVE_TIMEOUT ms
 				if (!optinalHttpRequest.isPresent()) {
 					break;
 				}
@@ -79,13 +85,29 @@ public class GenericRequestHandler implements Runnable {
 				writeResponse(out, response);
 
 				out.flush();
-				// clientSocket.close();
+
+				if (!isPersistentConnection(httpRequest)) {
+					clientSocket.close();
+					break;
+				}
 			}
 
 		} catch (IOException e) {
-			LOG.error("Error while reading/writing from socket " , e);
+			LOG.error("Error while reading/writing from socket ", e);
 		}
 
+	}
+
+	/**
+	 * Decide if the TCP Connection should be kept open
+	 * 
+	 * @param httpRequest
+	 * @return
+	 */
+	private boolean isPersistentConnection(HttpRequest httpRequest) {
+		List<String> connectionHeader = httpRequest.getHeader().getOrDefault(RequestHeader.CONNECTION.toString(), Collections.EMPTY_LIST);
+		connectionHeader.contains(CONNECTION_CLOSE_HEADER_VALUE);
+		return !connectionHeader.contains(CONNECTION_CLOSE_HEADER_VALUE) && httpRequest.getMethod() != Method.UNKNOWN;
 	}
 
 	private Optional<HttpRequest> parseRequest(Future<HttpRequest> futureRequest) {
@@ -136,14 +158,14 @@ public class GenericRequestHandler implements Runnable {
 		}
 		return methodHandler;
 	}
-	
+
 	/**
 	 * Wrap HttpRequest.parse in a callable to execute in a seperate thread
 	 */
 	private final class HttpRequestParser implements Callable<HttpRequest> {
-		
+
 		private final BufferedReader reader;
-		
+
 		public HttpRequestParser(BufferedReader reader) {
 			super();
 			this.reader = reader;
